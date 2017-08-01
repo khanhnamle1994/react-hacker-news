@@ -37,6 +37,9 @@ class App extends React.Component {
     this.fetchStories(value, 0);
   }
 
+  onPaginatedSearch = (e) =>
+    this.fetchStories(this.input.value, this.state.page + 1);
+
   fetchStories = (value, page) =>
     fetch(getHackerNewsUrl(value, page))
       .then(response => response.json())
@@ -59,17 +62,33 @@ class App extends React.Component {
 
         <List
           list={this.state.hits}
+          page={this.state.page}
+          onPaginatedSearch={this.onPaginatedSearch}
         />
       </div>
     );
   }
 }
 
-const List = ({ list }) =>
-  <div className="list">
-    {list.map(item => <div className="list-row" key={item.objectID}>
-      <a href={item.url}>{item.title}</a>
-    </div>)}
+const List = ({ list, page, onPaginatedSearch }) =>
+  <div>
+    <div className="list">
+      {list.map(item => <div className="list-row" key={item.objectID}>
+        <a href={item.url}>{item.title}</a>
+      </div>)}
+    </div>
+
+    <div className="interactions">
+      {
+        page !== null &&
+        <button
+          type="button"
+          onClick={onPaginatedSearch}
+        >
+          More
+        </button>
+      }
+    </div>
   </div>
 
 export default App;
