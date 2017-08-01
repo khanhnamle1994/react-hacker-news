@@ -5,11 +5,13 @@ import './App.css';
 const applyUpdateResult = (result) => (prevState) => ({
   hits: [...prevState.hits, ...result.hits],
   page: result.page,
+  isLoading: false,
 });
 
 const applySetResult = (result) => (prevState) => ({
   hits: result.hits,
   page: result.page,
+  isLoading: false,
 });
 
 const getHackerNewsUrl = (value, page) =>
@@ -22,6 +24,7 @@ class App extends React.Component {
     this.state = {
       hits: [],
       page: null,
+      isLoading: false,
     };
   }
 
@@ -40,10 +43,12 @@ class App extends React.Component {
   onPaginatedSearch = (e) =>
     this.fetchStories(this.input.value, this.state.page + 1);
 
-  fetchStories = (value, page) =>
-    fetch(getHackerNewsUrl(value, page))
-      .then(response => response.json())
-      .then(result => this.onSetResult(result, page));
+    fetchStories = (value, page) => {
+      this.setState({ isLoading: true });
+      fetch(getHackerNewsUrl(value, page))
+        .then(response => response.json())
+        .then(result => this.onSetResult(result, page));
+    }
 
   onSetResult = (result, page) =>
     page === 0
@@ -62,6 +67,7 @@ class App extends React.Component {
 
         <List
           list={this.state.hits}
+          isLoading={this.state.isLoading}
           page={this.state.page}
           onPaginatedSearch={this.onPaginatedSearch}
         />
@@ -70,7 +76,7 @@ class App extends React.Component {
   }
 }
 
-const List = ({ list, page, onPaginatedSearch }) =>
+const List = ({ list, page, isLoading, onPaginatedSearch }) =>
   <div>
     <div className="list">
       {list.map(item => <div className="list-row" key={item.objectID}>
@@ -79,8 +85,12 @@ const List = ({ list, page, onPaginatedSearch }) =>
     </div>
 
     <div className="interactions">
+      {isLoading && <span>Loading...</span>}
+    </div>
+
+    <div className="interactions">
       {
-        page !== null &&
+        (page !== null && !isLoading) &&
         <button
           type="button"
           onClick={onPaginatedSearch}
