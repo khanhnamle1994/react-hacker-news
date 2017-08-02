@@ -89,7 +89,8 @@ const withInfiniteScroll = (Component) =>
     onScroll = () => {
       if (
         (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500) &&
-        this.props.list.length
+        this.props.list.length &&
+        !this.props.isLoading
       ) {
         this.props.onPaginatedSearch();
       }
