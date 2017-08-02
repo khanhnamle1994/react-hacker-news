@@ -77,29 +77,36 @@ class App extends React.Component {
   }
 }
 
-const List = ({ list }) =>
-  <div className="list">
-    {list.map(item => <div className="list-row" key={item.objectID}>
-      <a href={item.url}>{item.title}</a>
-    </div>)}
-  </div>
+// React ES6 class component
+class List extends React.Component {
+  componentDidMount() {
+    window.addEventListener('scroll', this.onScroll, false);
+  }
 
-    <div className="interactions">
-      {isLoading && <span>Loading...</span>}
-    </div>
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll, false);
+  }
 
-    <div className="interactions">
-      {
-        (page !== null && !isLoading) &&
-        <button
-          type="button"
-          onClick={onPaginatedSearch}
-        >
-          More
-        </button>
-      }
-    </div>
-  </div>
+  onScroll = () => {
+    if (
+      (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500) &&
+      this.props.list.length
+    ) {
+      this.props.onPaginatedSearch();
+    }
+  }
+  
+  render() {
+    const { list } = this.props;
+    return (
+      <div className="list">
+        {list.map(item => <div className="list-row" key={item.objectID}>
+          <a href={item.url}>{item.title}</a>
+        </div>)}
+      </div>
+    );
+  };
+}
 
 const withLoading = (Component) => (props) =>
   <div>
