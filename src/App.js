@@ -90,7 +90,7 @@ class App extends React.Component {
   }
 }
 
-const withInfiniteScroll = (Component) =>
+const withInfiniteScroll = (conditionFn) => (Component) =>
   class WithInfiniteScroll extends React.Component {
     componentDidMount() {
       window.addEventListener('scroll', this.onScroll, false);
@@ -100,38 +100,30 @@ const withInfiniteScroll = (Component) =>
       window.removeEventListener('scroll', this.onScroll, false);
     }
 
-    onScroll = () => {
-      if (
-        (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500) &&
-        this.props.list.length &&
-        !this.props.isLoading &&
-        !this.props.isError
-      ) {
-        this.props.onPaginatedSearch();
-      }
-    }
+    onScroll = () =>
+      conditionFn(this.props) && this.props.onPaginatedSearch();
 
     render() {
       return <Component {...this.props} />;
     }
   }
 
-const withLoading = (Component) => (props) =>
+const withLoading = (conditionFn) => (Component) => (props) =>
   <div>
     <Component {...props} />
 
     <div className="interactions">
-      {props.isLoading && <span>Loading...</span>}
+      {conditionFn(props) && <span>Loading...</span>}
     </div>
   </div>
 
-const withPaginated = (Component) => (props) =>
+const withPaginated = (conditionFn) => (Component) => (props) =>
   <div>
     <Component {...props} />
 
     <div className="interactions">
       {
-        (props.page !== null && !props.isLoading && props.isError) &&
+        conditionFn(props) &&
         <div>
           <div>
             Something went wrong...
@@ -147,10 +139,22 @@ const withPaginated = (Component) => (props) =>
     </div>
   </div>
 
+const paginatedCondition = props =>
+  props.page !== null && !props.isLoading && props.isError;
+
+const infiniteScrollCondition = props =>
+  (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500)
+  && props.list.length
+  && !props.isLoading
+  && !props.isError;
+
+const loadingCondition = props =>
+  props.isLoading;
+
 const AdvancedList = compose(
-  withPaginated,
-  withInfiniteScroll,
-  withLoading,
+  withPaginated(paginatedCondition),
+  withInfiniteScroll(infiniteScrollCondition),
+  withLoading(loadingCondition),
 )(List);
 
 export default App;
