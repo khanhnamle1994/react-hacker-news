@@ -6,12 +6,19 @@ import './App.css';
 const applyUpdateResult = (result) => (prevState) => ({
   hits: [...prevState.hits, ...result.hits],
   page: result.page,
+  isError: false,
   isLoading: false,
 });
 
 const applySetResult = (result) => (prevState) => ({
   hits: result.hits,
   page: result.page,
+  isError: false,
+  isLoading: false,
+});
+
+const applySetError = (prevState) => ({
+  isError: true,
   isLoading: false,
 });
 
@@ -26,6 +33,7 @@ class App extends React.Component {
       hits: [],
       page: null,
       isLoading: false,
+      isError: false,
     };
   }
 
@@ -47,9 +55,13 @@ class App extends React.Component {
     fetchStories = (value, page) => {
       this.setState({ isLoading: true });
       fetch(getHackerNewsUrl(value, page))
+        .catch(this.onSetError)
         .then(response => response.json())
         .then(result => this.onSetResult(result, page));
     }
+
+  onSetError = () =>
+    this.setState(applySetError);
 
   onSetResult = (result, page) =>
     page === 0
@@ -66,8 +78,10 @@ class App extends React.Component {
           <button type="submit">Search</button>
         </form>
 
-        <ListWithLoadingWithInfinite
+        <AdvancedList
           list={this.state.hits}
+          isError={this.state.isError}
+          isLoading={this.state.isLoading}
           page={this.state.page}
           onPaginatedSearch={this.onPaginatedSearch}
         />
