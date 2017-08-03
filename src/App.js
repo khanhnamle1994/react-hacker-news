@@ -104,7 +104,8 @@ const withInfiniteScroll = (Component) =>
       if (
         (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500) &&
         this.props.list.length &&
-        !this.props.isLoading
+        !this.props.isLoading &&
+        !this.props.isError
       ) {
         this.props.onPaginatedSearch();
       }
@@ -130,19 +131,24 @@ const withPaginated = (Component) => (props) =>
 
     <div className="interactions">
       {
-        (props.page !== null && !props.isLoading) &&
-        <button
-          type="button"
-          onClick={props.onPaginatedSearch}
-        >
-          More
-        </button>
+        (props.page !== null && !props.isLoading && props.isError) &&
+        <div>
+          <div>
+            Something went wrong...
+          </div>
+          <button
+            type="button"
+            onClick={props.onPaginatedSearch}
+          >
+          Try Again
+          </button>
+        </div>
       }
     </div>
   </div>
 
-const ListWithLoadingWithInfinite = compose(
-  // withPaginated,
+const AdvancedList = compose(
+  withPaginated,
   withInfiniteScroll,
   withLoading,
 )(List);
